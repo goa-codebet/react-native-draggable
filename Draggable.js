@@ -1,6 +1,6 @@
 /**
  *	* https://github.com/tongyy/react-native-draggable
- * 
+ *
  */
 
 import React, { Component } from 'react';
@@ -28,7 +28,7 @@ export default class Draggable extends Component {
 				uri: PropTypes.string,
 			}),
 			PropTypes.number
-		]), 
+		]),
 		offsetX:PropTypes.number,
 		offsetY:PropTypes.number,
 		renderColor:PropTypes.string,
@@ -41,8 +41,9 @@ export default class Draggable extends Component {
 		pressOutDrag:PropTypes.func,
 		z:PropTypes.number,
 		x:PropTypes.number,
-		y:PropTypes.number
-		
+		y:PropTypes.number,
+		prevCoords: PropTypes.object,
+		deadZone: PropTypes.number
 	};
 	static defaultProps = {
 		offsetX : 100,
@@ -51,7 +52,9 @@ export default class Draggable extends Component {
 		renderText : '＋',
 		renderSize : 36,
 		offsetY : 100,
-		reverse : true
+		reverse : true,
+		prevCoords: {},
+		deadZone: 0
 	}
 
 	componentWillMount() {
@@ -63,36 +66,44 @@ export default class Draggable extends Component {
 	}
 	constructor(props, defaultProps) {
 		super(props, defaultProps);
-		const { pressDragRelease, reverse, onMove } = props;
+		const { pressDragRelease, pressDrag, reverse, onMove } = props;
 		this.state = {
-			pan:new Animated.ValueXY(), 
+			pan:new Animated.ValueXY(),
 			_value:{x: 0, y: 0}
 		};
 
-		this.panResponder = PanResponder.create({		
+		this.panResponder = PanResponder.create({
 			onMoveShouldSetPanResponder: (evt, gestureState) => true,
 			onMoveShouldSetPanResponderCapture: (evt, gestureState) => true,
 			onPanResponderGrant: (e, gestureState) => {
 				if(reverse == false) {
 					this.state.pan.setOffset({x: this.state._value.x, y: this.state._value.y});
 					this.state.pan.setValue({x: 0, y: 0});
+					this.prevCoords = { x: this.state._value.x, y: this.state._value.y }
 				}
 			},
-			onPanResponderMove: Animated.event([null,{ 
+			onPanResponderMove: Animated.event([null,{
 				dx:this.state.pan.x,
 				dy:this.state.pan.y
 			}], {listener: onMove}),
 			onPanResponderRelease: (e, gestureState) => {
+				if ( this.deadZone > 0 ) {
+					const distanceY = Math.abs(this.prevCoords.y - this.state._value.y)
+					const distanceX = Math.abs(this.prevCoords.x - this.state._value.x)
+					if (distanceX < this.deadZone || distanceY < this.deadZone && pressDrag)
+						pressDrag(e, gestureState)
+				}
+
 				if(pressDragRelease)
 					pressDragRelease(e, gestureState);
 				if(reverse == false)
 					this.state.pan.flattenOffset();
-				else 
+				else
 					this.reversePosition();
-			} 
+			}
 		});
 	}
-	
+
 	_positionCss = () => {
 		let Window = Dimensions.get('window');
 		const { renderSize, offsetX, offsetY, x, y, z } = this.props;
@@ -120,19 +131,19 @@ export default class Draggable extends Component {
 				backgroundColor: renderColor,
 				width: renderSize * 2,
 				height: renderSize * 2,
-				borderRadius: renderSize 
+				borderRadius: renderSize
 			};
 		}else if(renderShape == 'square') {
 			return{
 				backgroundColor: renderColor,
 				width: renderSize * 2,
 				height: renderSize * 2,
-				borderRadius: 0 
+				borderRadius: 0
 			};
 		}else if(renderShape == 'image') {
 			return{
 				width: renderSize,
-				height: renderSize 
+				height: renderSize
 			};
 		}
 	}
@@ -157,9 +168,9 @@ export default class Draggable extends Component {
 	}
 
 	reversePosition = () => {
-		Animated.spring(						
-			this.state.pan,				 
-			{toValue:{x:0,y:0}}		 
+		Animated.spring(
+			this.state.pan,
+			{toValue:{x:0,y:0}}
 		).start();
 	}
 
@@ -169,17 +180,17 @@ export default class Draggable extends Component {
 
 		return (
 			<View style={this._positionCss()}>
-				<Animated.View 
+				<Animated.View
 					{...this.panResponder.panHandlers}
 					style={[this.state.pan.getLayout()]}>
-					<TouchableOpacity 
+					<TouchableOpacity
 						style={this._dragItemCss()}
 						onPress={pressDrag}
 						onLongPress={longPressDrag}
 						onPressIn={pressInDrag}
 						onPressOut={pressOutDrag}
 					>
-						{touchableContent}	
+						{touchableContent}
 					</TouchableOpacity>
 				</Animated.View>
 			</View>
