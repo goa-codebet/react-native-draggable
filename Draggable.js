@@ -87,10 +87,14 @@ export default class Draggable extends Component {
 				dy:this.state.pan.y
 			}], {listener: onMove}),
 			onPanResponderRelease: (e, gestureState) => {
-				if ( this.deadZone > 0 ) {
+				if ( this.props.deadZone > 0 ) {
 					const distanceY = Math.abs(this.prevCoords.y - this.state._value.y)
 					const distanceX = Math.abs(this.prevCoords.x - this.state._value.x)
-					if (distanceX < this.deadZone || distanceY < this.deadZone && pressDrag)
+					if (
+						(distanceX < this.props.deadZone ||
+							distanceY < this.props.deadZone) &&
+						pressDrag
+					)
 						pressDrag(e, gestureState)
 				}
 
