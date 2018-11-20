@@ -1,23 +1,17 @@
 # react-native-draggable
-[![Build Status](https://travis-ci.org/tongyy/react-native-draggable.svg?branch=master)](https://travis-ci.org/tongyy/react-native-draggable)
-[![npm version](https://badge.fury.io/js/react-native-draggable.svg)](https://badge.fury.io/js/react-native-draggable)
 
-[![NPM](https://nodei.co/npm/react-native-draggable.png?compact=true)](https://npmjs.org/package/react-native-draggable)
 
 
 Draggable item for react-native!
 
-```
-npm install react-native-draggable --save
-import Draggable from 'react-native-draggable';
-```
+
 How to use
 
 ```
 return (
     <View >
-        <Draggable renderSize={56} renderColor='black' offsetX={-100} offsetY={-200} renderText='A' pressDrag={()=>alert('touched!!')}/> 
-        <Draggable reverse={false} renderColor='red' renderShape='square' offsetX={0} offsetY={0} renderText='B'/>
+        <Draggable renderSize={56} renderColor='black' offsetX={-100} offsetY={-200} pressDrag={()=>alert('touched!!')} tolerance={5} />
+            <ChildCompoent />
         <Draggable/>
     </View>
 );
@@ -30,19 +24,19 @@ in my project => <img src="https://raw.githubusercontent.com/tongyy/react-native
 ```
 return (
     <View style={{backgroundColor: 'blue', flex: 0.5}} >
-        <Draggable renderShape='image' imageSource={this.state.source} renderSize={80} 
+        <Draggable renderShape='image' imageSource={this.state.source} renderSize={80}
             offsetX={0} offsetY={0}
             pressDragRelease={this._changeFace}
             longPressDrag={()=>console.log('long press')}
             pressDrag={()=>console.log('press drag')}
             pressInDrag={()=>console.log('in press')}
             pressOutDrag={()=>console.log('out press')}
-        />  
+        />
     </View>
-);  
+);
 
 ```
-[Event Demo](https://github.com/tongyy/react-native-draggable/blob/master/demo/demo3.gif) 
+[Event Demo](https://github.com/tongyy/react-native-draggable/blob/master/demo/demo3.gif)
 
 ![DEMO2](https://raw.githubusercontent.com/tongyy/react-native-draggable/master/demo/demo3.gif)
 
@@ -51,16 +45,12 @@ return (
 ## Properties
 | Prop | Type | Example | Default | Description |
 | :------------ |:---------------:|:---------------:|:---------------:|:-----|
-| renderText | string | 'ANY' | '+' | text of draggable |
-| renderShape | string |'circle' , 'square' , 'image'| 'circle' | shape type |
-| imageSource | source | require('./img/xxx.png') | --- | image source|
-| renderSize | number | {36} | {36} | draggable size |
+| tolerance | number | {25} | {0} | Distance component can move and also trigger click |
 | offsetX | number |{0}| {100} | offsetX with center |
 | offsetY | number |{100}| {100} | offsetY with center |
 | x | number |{0}| --- | position x |
 | y | number |{0}| --- | position y |
 | z | number |{0}| --- | position z |
-| renderColor | string | 'black' | 'yellowgreen' | [Colors](https://facebook.github.io/react-native/docs/colors.html)|
 | reverse | bool | {true} | {true} | reverse flag |
 
 ## Events
@@ -79,8 +69,8 @@ return (
 
 # What's next?
 
-This Draggable is used to be a Draggable Button in my project. 
+This Draggable is used to be a Draggable Button in my project.
 Let me know if you have any idea or demand, let's discuss and develop it.
     
-    
-   
+
+
