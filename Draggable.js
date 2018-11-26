@@ -40,6 +40,7 @@ export default class Draggable extends Component {
     y: PropTypes.number,
     prevCoords: PropTypes.object,
     tolerance: PropTypes.number,
+    sticky: PropTypes.bool,
   }
   static defaultProps = {
     offsetX: 100,
@@ -51,6 +52,7 @@ export default class Draggable extends Component {
     reverse: true,
     prevCoords: {},
     tolerance: 0,
+    sticky: false,
   }
 
   componentWillMount() {
@@ -93,14 +95,22 @@ export default class Draggable extends Component {
       ),
       onPanResponderRelease: (e, gestureState) => {
         const { tolerance } = this.props
+        let isActive = true
         if (tolerance > 0) {
           const distance = {
             x: Math.abs(this.prevCoords.x - this.state._value.x),
             y: Math.abs(this.prevCoords.y - this.state._value.y),
-					}
+          }
 
-          if (distance.x < tolerance && distance.y < tolerance && pressDrag)
+          if (distance.x < tolerance && distance.y < tolerance && pressDrag) {
+            isActive = false
             pressDrag(e, gestureState)
+          }
+        }
+
+        if (isActive && !reverse) {
+          this.stickToEdge()
+          return
         }
 
         if (pressDragRelease) pressDragRelease(e, gestureState)
@@ -143,6 +153,50 @@ export default class Draggable extends Component {
 
   reversePosition = () => {
     Animated.spring(this.state.pan, { toValue: { x: 0, y: 0 } }).start()
+  }
+
+  stickToEdge = () => {
+    const {
+      _value: { x },
+      _value: { y },
+      pan,
+    } = this.state
+
+    const closestPosition = this.getClosestPosition({ y, x })
+    pan.flattenOffset()
+    Animated.spring(pan, {
+      toValue: { x: closestPosition.pos.x, y: closestPosition.pos.y },
+    }).start()
+  }
+
+  getClosestPosition = pos => {
+    const { renderSize } = this.props
+    const { width, height } = Dimensions.get('screen')
+    const padding = 20
+    const paddingRight = padding * 2 + renderSize
+    const buttonPositions = {
+      topLeft: { x: padding, y: padding },
+      topMiddle: { x: width / 2 - renderSize, y: padding },
+      topRight: { x: width - paddingRight, y: padding },
+      middleLeft: { x: padding, y: height / 2 },
+      middleRight: { x: width - paddingRight, y: height / 2 },
+      bottomLeft: { x: padding, y: height - paddingRight },
+      bottomMiddle: { x: width / 2 - renderSize, y: height - paddingRight },
+      bottomRight: { x: width - paddingRight, y: height - paddingRight },
+    }
+
+    let shortestDistance = { distance: Number.MAX_SAFE_INTEGER, pos: null }
+    let distance = 0
+    for (var p in buttonPositions) {
+      distance = Math.hypot(
+        pos.x - buttonPositions[p].x,
+        pos.y - buttonPositions[p].y,
+      )
+      if (distance < shortestDistance.distance) {
+        shortestDistance = { distance, pos: buttonPositions[p], name: p }
+      }
+    }
+    return shortestDistance
   }
 
   render() {
