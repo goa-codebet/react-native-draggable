@@ -197,6 +197,7 @@ export default class Draggable extends Component {
     const { renderSize } = this.props
     const padding = 20
     const paddingRight = padding * 2 + renderSize
+    const softNavBarHeight = Platform.OS === 'android' ? 70 : 0
 
     const buttonPositions = {
       topLeft: { x: padding, y: padding },
@@ -204,9 +205,9 @@ export default class Draggable extends Component {
       topRight: { x: width - paddingRight, y: padding },
       middleLeft: { x: padding, y: height / 2 },
       middleRight: { x: width - paddingRight, y: height / 2 },
-      bottomLeft: { x: padding, y: height - paddingRight },
-      bottomMiddle: { x: width / 2 - renderSize, y: height - paddingRight },
-      bottomRight: { x: width - paddingRight, y: height - paddingRight },
+      bottomLeft: { x: padding, y: height - paddingRight - softNavBarHeight },
+      bottomMiddle: { x: width / 2 - renderSize, y: height - paddingRight - softNavBarHeight },
+      bottomRight: { x: width - paddingRight, y: height - paddingRight - softNavBarHeight },
     }
 
     return buttonPositions
