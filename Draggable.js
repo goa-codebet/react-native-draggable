@@ -41,7 +41,6 @@ export default class Draggable extends Component {
     prevCoords: PropTypes.object,
     tolerance: PropTypes.number,
     sticky: PropTypes.bool,
-    startPosition: PropTypes.string,
   }
   static defaultProps = {
     offsetX: 100,
@@ -56,15 +55,19 @@ export default class Draggable extends Component {
     sticky: false,
   }
 
+  currentStickyPosition = false
+
   componentWillMount() {
     if (this.props.reverse == false) {
       this.state.pan.addListener(c => (this.state._value = c))
+      Dimensions.addEventListener('change', this.updateStickyPosition)
       this.setInitialPosition()
     }
   }
 
   componentWillUnmount() {
     this.state.pan.removeAllListeners()
+    Dimensions.removeEventListener('change', this.updateStickyPosition)
   }
 
   constructor(props, defaultProps) {
@@ -127,20 +130,26 @@ export default class Draggable extends Component {
 
   _positionCss = () => {
     let Window = Dimensions.get('window')
-    const { renderSize, offsetX, offsetY, x, y, z } = this.props
+    const { renderSize, offsetX, offsetY, x, y, z, sticky } = this.props
+    let posX,
+      posY = 0
+    if (!sticky) {
+      posX = x != null ? x : Window.width / 2 - renderSize + offsetX
+      posY = y != null ? y : Window.width / 2 - renderSize + offsetY
+    }
     return Platform.select({
       ios: {
         zIndex: z != null ? z : 999,
         position: 'absolute',
-        top: y != null ? y : Window.height / 2 - renderSize + offsetY,
-        left: x != null ? x : Window.width / 2 - renderSize + offsetX,
+        top: posY,
+        left: posX,
       },
       android: {
         position: 'absolute',
         width: Window.width,
         height: Window.height,
-        top: y != null ? y : Window.height / 2 - renderSize + offsetY,
-        left: x != null ? x : Window.width / 2 - renderSize + offsetX,
+        top: posY,
+        left: posX,
       },
     })
   }
@@ -160,18 +169,24 @@ export default class Draggable extends Component {
     Animated.spring(this.state.pan, { toValue: { x: 0, y: 0 } }).start()
   }
 
-  stickToEdge = () => {
+  updateStickyPosition = () => {
+    this.setInitialPosition(this.currentStickyPosition)
+  }
+
+  stickToEdge = (pos = false) => {
     const {
       _value: { x },
       _value: { y },
       pan,
     } = this.state
+    const buttonPosition = this.getClosestPosition({ y, x })
 
-    const closestPosition = this.getClosestPosition({ y, x })
     pan.flattenOffset()
     Animated.spring(pan, {
-      toValue: { x: closestPosition.pos.x, y: closestPosition.pos.y },
+      toValue: { x: buttonPosition.pos.x, y: buttonPosition.pos.y },
     }).start()
+
+    this.currentStickyPosition = buttonPosition.name
   }
 
   getClosestPosition = pos => {
@@ -206,27 +221,34 @@ export default class Draggable extends Component {
       middleLeft: { x: padding, y: height / 2 },
       middleRight: { x: width - paddingRight, y: height / 2 },
       bottomLeft: { x: padding, y: height - paddingRight - softNavBarHeight },
-      bottomMiddle: { x: width / 2 - renderSize, y: height - paddingRight - softNavBarHeight },
-      bottomRight: { x: width - paddingRight, y: height - paddingRight - softNavBarHeight },
+      bottomMiddle: {
+        x: width / 2 - renderSize,
+        y: height - paddingRight - softNavBarHeight,
+      },
+      bottomRight: {
+        x: width - paddingRight,
+        y: height - paddingRight - softNavBarHeight,
+      },
     }
 
     return buttonPositions
   }
 
-  setInitialPosition = () => {
+  setInitialPosition = (pos = false) => {
     const { startPosition } = this.props
     const positions = this.getStickyPositios()
-    if (startPosition && positions[startPosition]) {
+    const buttonPosition = pos ? positions[pos] : positions[startPosition]
+    if (buttonPosition) {
       this.state.pan.setValue({
-        x: positions[startPosition].x,
-        y: positions[startPosition].y,
+        x: buttonPosition.x,
+        y: buttonPosition.y,
       })
     }
   }
 
   render() {
     const { pressDrag, longPressDrag, pressInDrag, pressOutDrag } = this.props
-
+    let Window = Dimensions.get('window')
     return (
       <View style={this._positionCss()}>
         <Animated.View
