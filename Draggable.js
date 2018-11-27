@@ -41,6 +41,7 @@ export default class Draggable extends Component {
     prevCoords: PropTypes.object,
     tolerance: PropTypes.number,
     sticky: PropTypes.bool,
+    startPosition: PropTypes.string,
   }
   static defaultProps = {
     offsetX: 100,
@@ -56,12 +57,16 @@ export default class Draggable extends Component {
   }
 
   componentWillMount() {
-    if (this.props.reverse == false)
+    if (this.props.reverse == false) {
       this.state.pan.addListener(c => (this.state._value = c))
+      this.setInitialPosition()
+    }
   }
+
   componentWillUnmount() {
     this.state.pan.removeAllListeners()
   }
+
   constructor(props, defaultProps) {
     super(props, defaultProps)
     const { pressDragRelease, pressDrag, reverse, onMove } = props
@@ -170,20 +175,7 @@ export default class Draggable extends Component {
   }
 
   getClosestPosition = pos => {
-    const { renderSize } = this.props
-    const { width, height } = Dimensions.get('screen')
-    const padding = 20
-    const paddingRight = padding * 2 + renderSize
-    const buttonPositions = {
-      topLeft: { x: padding, y: padding },
-      topMiddle: { x: width / 2 - renderSize, y: padding },
-      topRight: { x: width - paddingRight, y: padding },
-      middleLeft: { x: padding, y: height / 2 },
-      middleRight: { x: width - paddingRight, y: height / 2 },
-      bottomLeft: { x: padding, y: height - paddingRight },
-      bottomMiddle: { x: width / 2 - renderSize, y: height - paddingRight },
-      bottomRight: { x: width - paddingRight, y: height - paddingRight },
-    }
+    const buttonPositions = this.getStickyPositios()
 
     let shortestDistance = { distance: Number.MAX_SAFE_INTEGER, pos: null }
     let distance = 0
@@ -196,7 +188,39 @@ export default class Draggable extends Component {
         shortestDistance = { distance, pos: buttonPositions[p], name: p }
       }
     }
+
     return shortestDistance
+  }
+
+  getStickyPositios = () => {
+    const { width, height } = Dimensions.get('screen')
+    const { renderSize } = this.props
+    const padding = 20
+    const paddingRight = padding * 2 + renderSize
+
+    const buttonPositions = {
+      topLeft: { x: padding, y: padding },
+      topMiddle: { x: width / 2 - renderSize, y: padding },
+      topRight: { x: width - paddingRight, y: padding },
+      middleLeft: { x: padding, y: height / 2 },
+      middleRight: { x: width - paddingRight, y: height / 2 },
+      bottomLeft: { x: padding, y: height - paddingRight },
+      bottomMiddle: { x: width / 2 - renderSize, y: height - paddingRight },
+      bottomRight: { x: width - paddingRight, y: height - paddingRight },
+    }
+
+    return buttonPositions
+  }
+
+  setInitialPosition = () => {
+    const { startPosition } = this.props
+    const positions = this.getStickyPositios()
+    if (startPosition && positions[startPosition]) {
+      this.state.pan.setValue({
+        x: positions[startPosition].x,
+        y: positions[startPosition].y,
+      })
+    }
   }
 
   render() {
