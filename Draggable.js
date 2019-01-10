@@ -247,8 +247,7 @@ export default class Draggable extends Component {
   }
 
   render() {
-    const { pressDrag, longPressDrag, pressInDrag, pressOutDrag } = this.props
-    let Window = Dimensions.get('window')
+    const { pressDrag, longPressDrag, pressInDrag, pressOutDrag, renderSize } = this.props
     return (
       <View style={this._positionCss()}>
         <Animated.View
@@ -260,6 +259,7 @@ export default class Draggable extends Component {
             onLongPress={longPressDrag}
             onPressIn={pressInDrag}
             onPressOut={pressOutDrag}
+            style={{width: renderSize * 2}}
           >
             {this.props.children}
           </TouchableOpacity>
