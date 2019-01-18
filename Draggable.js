@@ -211,17 +211,17 @@ export default class Draggable extends Component {
 
   getStickyPositios = () => {
     const { width, height } = Dimensions.get('window')
-    const { renderSize, padding: { bottom: pb} } = this.props
+    const { renderSize, padding: { bottom: pb, top: pt} } = this.props
     const padding = 20
     const paddingRight = padding * 2 + renderSize
     const paddingBottom = pb
 
     const buttonPositions = {
-      topLeft: { x: padding, y: padding },
-      topMiddle: { x: width / 2 - renderSize, y: padding },
-      topRight: { x: width - paddingRight, y: padding },
-      middleLeft: { x: padding, y: height / 2 },
-      middleRight: { x: width - paddingRight, y: height / 2 },
+      topLeft: { x: padding, y: padding + pt },
+      topMiddle: { x: width / 2 - renderSize, y: padding + pt },
+      topRight: { x: width - paddingRight, y: padding + pt },
+      middleLeft: { x: padding, y: (height / 2) - (pt / 2) },
+      middleRight: { x: width - paddingRight, y: (height / 2) - (pt / 2) },
       bottomLeft: { x: padding, y: height - paddingRight - paddingBottom },
       bottomMiddle: {
         x: width / 2 - renderSize,
