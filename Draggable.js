@@ -41,6 +41,7 @@ export default class Draggable extends Component {
     prevCoords: PropTypes.object,
     tolerance: PropTypes.number,
     sticky: PropTypes.bool,
+    padding: PropTypes.object
   }
   static defaultProps = {
     offsetX: 100,
@@ -53,6 +54,7 @@ export default class Draggable extends Component {
     prevCoords: {},
     tolerance: 0,
     sticky: false,
+    padding: { top: 0, bottom: 0, left: 0, right: 0}
   }
 
   currentStickyPosition = false
@@ -208,11 +210,11 @@ export default class Draggable extends Component {
   }
 
   getStickyPositios = () => {
-    const { width, height } = Dimensions.get('screen')
-    const { renderSize } = this.props
+    const { width, height } = Dimensions.get('window')
+    const { renderSize, padding: { bottom: pb} } = this.props
     const padding = 20
     const paddingRight = padding * 2 + renderSize
-    const softNavBarHeight = Platform.OS === 'android' ? 70 : 0
+    const paddingBottom = pb
 
     const buttonPositions = {
       topLeft: { x: padding, y: padding },
@@ -220,14 +222,14 @@ export default class Draggable extends Component {
       topRight: { x: width - paddingRight, y: padding },
       middleLeft: { x: padding, y: height / 2 },
       middleRight: { x: width - paddingRight, y: height / 2 },
-      bottomLeft: { x: padding, y: height - paddingRight - softNavBarHeight },
+      bottomLeft: { x: padding, y: height - paddingRight - paddingBottom },
       bottomMiddle: {
         x: width / 2 - renderSize,
-        y: height - paddingRight - softNavBarHeight,
+        y: height - paddingRight - paddingBottom,
       },
       bottomRight: {
         x: width - paddingRight,
-        y: height - paddingRight - softNavBarHeight,
+        y: height - paddingRight - paddingBottom,
       },
     }
 
